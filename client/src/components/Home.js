@@ -42,8 +42,6 @@ const Home = () => {
     const checkUser = () => {
       if (!localStorage.getItem("_id")) {
         navigate("/");
-      } else {
-        console.log("Authenticated");
       }
     };
     checkUser();

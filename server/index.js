@@ -1,5 +1,8 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+const mysql = require("mysql");
 const cors = require("cors");
+const db = require("./db_connection.js");
 const app = express();
 const PORT = 4000;
 
@@ -13,40 +16,57 @@ const threadList = [];
 const generateID = () => Math.random().toString(36).substring(2, 10);
 
 app.post("/api/register", async (req, res) => {
-  const { email, password, username } = req.body;
-  const id = generateID();
-  const result = users.filter(
-    (user) => user.email === email && user.password === password
-  );
+  const user = req.body.username;
+  const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
-  if (result.length === 0) {
-    const newUser = { id, email, password, username };
-    users.push(newUser);
-    return res.json({
-      message: "Account created successfully!",
-    });
-  }
-  res.json({
-    error_message: "User already exists",
+  const sqlSearch = "SELECT * FROM users WHERE user = ?";
+  const search_query = mysql.format(sqlSearch, [user]);
+  const sqlInsert = "INSERT INTO users VALUES (0,?,?)";
+  const insert_query = mysql.format(sqlInsert, [user, hashedPassword]);
+
+  await db.connection.query(search_query, async (err, result) => {
+    if (err) throw err;
+    if (result.length != 0) {
+      return res.json({
+        error_message: "User already exists!",
+      });
+    } else {
+      await db.connection.query(insert_query, (err, result) => {
+        if (err) throw err;
+        return res.json({
+          message: "Account created successfully!",
+        });
+      });
+    }
   });
 });
 
 app.post("/api/login", (req, res) => {
-  const { email, password } = req.body;
+  const user = req.body.username;
+  const password = req.body.password;
 
-  let result = users.filter(
-    (user) => user.email === email && user.password === password
-  );
+  const sqlSearch = "SELECT * FROM users WHERE user = ?";
+  const search_query = mysql.format(sqlSearch, [user]);
 
-  if (result.length !== 1) {
-    return res.json({
-      error_message: "Incorrect credentials",
-    });
-  }
+  db.connection.query(search_query, async (err, result) => {
+    if (err) throw err;
+    if (result.length == 0) {
+      return res.json({
+        error_message: "User does not exist!",
+      });
+    } else {
+      const hashedPassword = result[0].password;
 
-  res.json({
-    message: "Login successfully",
-    id: result[0].id,
+      if (await bcrypt.compare(password, hashedPassword)) {
+        return res.json({
+          message: `Welcome, ${user}!`,
+        });
+      } else {
+        return res.json({
+          error_message: "Password incorrect!",
+        });
+      }
+    }
   });
 });
 
