@@ -7,6 +7,7 @@ const Replies = () => {
   const [replyList, setReplyList] = useState([]);
   const [reply, setReply] = useState("");
   const [title, setTitle] = useState("");
+  const [name, setName] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -25,6 +26,7 @@ const Replies = () => {
         .then((data) => {
           setReplyList(data.replies);
           setTitle(data.title);
+          setName(data.name);
         })
         .catch((err) => console.error(err));
     };
@@ -80,7 +82,7 @@ const Replies = () => {
 
       <Box>
         {replyList.map((reply) => (
-          <Box key={id}>
+          <Box key={reply.replyId}>
             <p>{reply.text}</p>
             <div className="react__container">
               <p style={{ opacity: "0.5" }}>by {reply.name}</p>
