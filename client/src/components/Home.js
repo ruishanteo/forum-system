@@ -10,6 +10,7 @@ import CreateIcon from "@mui/icons-material/Create";
 
 const Home = () => {
   const [thread, setThread] = useState("");
+  const [title, setTitle] = useState("");
   const [threadList, setThreadList] = useState([]);
   const navigate = useNavigate();
 
@@ -17,6 +18,7 @@ const Home = () => {
     fetch("http://localhost:4000/api/create/thread", {
       method: "POST",
       body: JSON.stringify({
+        title,
         thread,
         userId: localStorage.getItem("_id"),
       }),
@@ -27,15 +29,16 @@ const Home = () => {
       .then((res) => res.json())
       .then((data) => {
         alert(data.message);
-        setThreadList(data.threads);
+        window.location.reload();
       })
       .catch((err) => console.error(err));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createThread();
+    setTitle("");
     setThread("");
+    createThread();
   };
 
   useEffect(() => {
@@ -75,11 +78,22 @@ const Home = () => {
         </Box>
         <TextField
           type="text"
+          name="title"
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter title here."
+        />
+        <TextField
+          type="text"
           name="thread"
           required
           value={thread}
           onChange={(e) => setThread(e.target.value)}
           placeholder="Enter text here."
+          sx={{ mt: 2 }}
+          multiline
+          rows={5}
         />
         <Button
           variant="contained"
@@ -92,19 +106,23 @@ const Home = () => {
 
       <Box align="left" sx={{ ml: 8 }}>
         {threadList.map((thread) => (
-          <Box key={thread.id}>
+          <Box key={thread.threadId}>
             <Typography>{thread.title}</Typography>
+            <Typography>{thread.text}</Typography>
             <Box
               className="react__container"
               maxWidth="5vw"
               display="flex"
               flexDirection="row"
             >
-              <Likes numberOfLikes={thread.likes.length} threadId={thread.id} />
+              <Likes
+                numberOfLikes={thread.likesCount}
+                threadId={thread.threadId}
+              />
 
               <Comments
-                numberOfComments={thread.replies.length}
-                threadId={thread.id}
+                numberOfComments={thread.repliesCount}
+                threadId={thread.threadId}
                 title={thread.title}
               />
             </Box>
