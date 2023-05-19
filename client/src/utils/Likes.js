@@ -22,6 +22,7 @@ const Likes = ({ numberOfLikes, threadId }) => {
           alert(data.error_message);
         } else {
           alert(data.message);
+          window.location.reload();
         }
       })
       .catch((err) => console.error(err));
