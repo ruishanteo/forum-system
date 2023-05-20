@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  List,
+  ListItem,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 const Replies = () => {
   const [replyList, setReplyList] = useState([]);
   const [reply, setReply] = useState("");
   const [title, setTitle] = useState("");
-  const [name, setName] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -26,7 +33,6 @@ const Replies = () => {
         .then((data) => {
           setReplyList(data.replies);
           setTitle(data.title);
-          setName(data.name);
         })
         .catch((err) => console.error(err));
     };
@@ -61,10 +67,13 @@ const Replies = () => {
 
   return (
     <Box align="center">
-      <Typography sx={{ mt: 5 }}>{title}</Typography>
+      <Typography variant="h4" sx={{ mt: 5 }}>
+        {title}
+      </Typography>
 
       <Box display="flex" flexDirection="column" maxWidth="50vw">
         <TextField
+          multiline
           rows={5}
           value={reply}
           onChange={(e) => setReply(e.target.value)}
@@ -76,20 +85,25 @@ const Replies = () => {
         />
 
         <Button variant="contained" onClick={handleSubmitReply} sx={{ mt: 5 }}>
-          SEND
+          SUBMIT
         </Button>
       </Box>
 
-      <Box>
+      <List>
         {replyList.map((reply) => (
-          <Box key={reply.replyId}>
-            <p>{reply.text}</p>
-            <div className="react__container">
-              <p style={{ opacity: "0.5" }}>by {reply.name}</p>
-            </div>
+          <Box sx={{ mx: 2, px: 20 }} key={reply.replyId}>
+            <ListItem>
+              <Box>
+                <p>{reply.text}</p>
+                <div className="react__container">
+                  <p style={{ opacity: "0.5" }}>by {reply.name}</p>
+                </div>
+              </Box>
+            </ListItem>
+            <Divider />
           </Box>
         ))}
-      </Box>
+      </List>
     </Box>
   );
 };
